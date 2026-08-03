@@ -36,12 +36,7 @@ func main() {
 
 		log.Println(destPath)
 
-		err := download(dep.URL, tmpPath)
-		if err != nil {
-			log.Fatalf("%s: %s", destPath, err)
-		}
-
-		err = check(tmpPath, dep.Sha256)
+		err := downloadAndCheck(dep.URL, tmpPath, dep.Sha256)
 		if err != nil {
 			log.Fatalf("%s: %s", destPath, err)
 		}
@@ -51,6 +46,31 @@ func main() {
 			log.Fatalf("%s: %s", destPath, err)
 		}
 	}
+}
+
+// downloadAndCheck retries download+checksum together. A partial download
+// that returned HTTP 200 (e.g. gitlab archive URLs sometimes truncate)
+// passes download() but fails check(); the retry must re-download.
+func downloadAndCheck(url, path, sha256sum string) error {
+	const attempts = 5
+	var lastErr error
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			backoff := time.Duration(1<<(i-1)) * 3 * time.Second
+			log.Printf("download: retry %d/%d after %s (%v)", i, attempts-1, backoff, lastErr)
+			time.Sleep(backoff)
+		}
+		if err := downloadOnce(url, path); err != nil {
+			lastErr = err
+			continue
+		}
+		if err := check(path, sha256sum); err != nil {
+			lastErr = err
+			continue
+		}
+		return nil
+	}
+	return lastErr
 }
 
 func parseExt(filename string, count int) string {
@@ -71,26 +91,6 @@ func reverse(s []string) []string {
 		r = append(r, s[i])
 	}
 	return r
-}
-
-func download(url, path string) error {
-	// Retry with exponential backoff — upstream sources (ffmpeg.org,
-	// freedesktop.org, gitlab.gnome.org) intermittently 4xx/5xx or drop TLS
-	// handshakes from GH Actions runners. Single-shot download aborts the
-	// whole ~60min build on any single flake.
-	const attempts = 5
-	var lastErr error
-	for i := 0; i < attempts; i++ {
-		if i > 0 {
-			backoff := time.Duration(1<<(i-1)) * 3 * time.Second
-			log.Printf("download: retry %d/%d after %s (%v)", i, attempts-1, backoff, lastErr)
-			time.Sleep(backoff)
-		}
-		if lastErr = downloadOnce(url, path); lastErr == nil {
-			return nil
-		}
-	}
-	return lastErr
 }
 
 func downloadOnce(url, path string) error {

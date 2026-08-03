@@ -64,10 +64,10 @@ task downloadDependencies(type: Exec) {
         def releaseTag = "android-v1.1.7-openssl.1"
         def releaseUrl = "https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/${releaseTag}"
         def filesToDownload = [
-            ["url": "${releaseUrl}/default-arm64-v8a.jar", "md5": "FILLME-arm64-v8a", "destination": file("$buildDir/${releaseTag}/default-arm64-v8a.jar")],
-            ["url": "${releaseUrl}/default-armeabi-v7a.jar", "md5": "FILLME-armeabi-v7a", "destination": file("$buildDir/${releaseTag}/default-armeabi-v7a.jar")],
-            ["url": "${releaseUrl}/default-x86_64.jar", "md5": "FILLME-x86_64", "destination": file("$buildDir/${releaseTag}/default-x86_64.jar")],
-            ["url": "${releaseUrl}/default-x86.jar", "md5": "FILLME-x86", "destination": file("$buildDir/${releaseTag}/default-x86.jar")]
+            ["url": "${releaseUrl}/default-arm64-v8a.jar", "md5": "bb70508241977dc55676ad2db8004629", "destination": file("$buildDir/${releaseTag}/default-arm64-v8a.jar")],
+            ["url": "${releaseUrl}/default-armeabi-v7a.jar", "md5": "2c272dc699c636e6880d780d35d575b6", "destination": file("$buildDir/${releaseTag}/default-armeabi-v7a.jar")],
+            ["url": "${releaseUrl}/default-x86_64.jar", "md5": "d7769d81c0303841620c737e04e38d73", "destination": file("$buildDir/${releaseTag}/default-x86_64.jar")],
+            ["url": "${releaseUrl}/default-x86.jar", "md5": "e13e7fbb53b5a6f5fdf570d52b9bdc8c", "destination": file("$buildDir/${releaseTag}/default-x86.jar")]
         ]
 
         filesToDownload.each { fileInfo ->

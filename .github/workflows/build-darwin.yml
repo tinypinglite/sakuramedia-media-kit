@@ -35,7 +35,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install build tools
-        run: brew install go meson ninja nasm
+        # cmake is needed for uchardet (its meson.build wraps a CMake subproject).
+        run: brew install go meson ninja nasm cmake
 
       - name: Print tool versions
         run: make tool-versions

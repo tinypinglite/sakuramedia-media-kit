@@ -1,71 +1,76 @@
+# All upstream tarballs are re-hosted on this project's own
+# "deps-mirror-v1" GitHub Release — see the top-level README for the why.
+# Short version: over the course of one afternoon, SourceForge 403'd,
+# freedesktop.org 418'd, Savannah 502'd, ffmpeg.org TLS-timeouted, and
+# code.videolan.org's gitlab archive SHA drifted. Not one upstream mirror
+# held up; every one of them broke a build. Now we control the whole set.
+#
+# All 15 tarballs were verified against upstream SHA256 locally before
+# uploading to the mirror release. To refresh the mirror (e.g. bump a dep):
+#   1. Download the new upstream tarball, verify its SHA.
+#   2. Upload to a NEW mirror release (deps-mirror-v2, don't overwrite v1).
+#   3. Update the URL(s) and sha256(s) below and re-tag darwin-v*.
+#
+# libx264 is intentionally not mirrored — only the "encodersgpl" flavor
+# depends on it, and we only build "video-default".
+
 dav1d:
   version: 1.2.1
-  # code.videolan.org's gitlab archive URLs drift when gitlab bumps its git
-  # archive format. downloads.videolan.org hosts real release tarballs with
-  # stable SHAs.
-  url: https://downloads.videolan.org/pub/videolan/dav1d/1.2.1/dav1d-1.2.1.tar.xz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/dav1d-1.2.1.tar.xz
   sha256: 4e33eb61ec54c768a16da0cf8fa0928b4c4593f5f804a3c887d4a21c318340b2
 ffmpeg:
   version: "6.0"
-  url: https://ffmpeg.org/releases/ffmpeg-6.0.tar.xz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/ffmpeg-6.0.tar.xz
   sha256: 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082
 fftools-ffi:
   version: "106d5813"
-  url: https://github.com/moffatman/fftools-ffi/archive/106d58138071eba66c7d814f6573029c712cd597.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/fftools-ffi-106d5813.tar.gz
   sha256: 4577bb410978f5026270390aa65ebf0307250f3f5b0adf5353e060a5a3f4ee25
 freetype:
   version: 2.13.2
-  # SourceForge blocks CI runners with 403. Savannah hosts the same tarball
-  # (bit-exact — SHA matches upstream) as the canonical FreeType mirror.
-  url: https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/freetype-2.13.2.tar.xz
   sha256: 12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d
 fribidi:
   version: 1.0.13
-  url: https://github.com/fribidi/fribidi/releases/download/v1.0.13/fribidi-1.0.13.tar.xz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/fribidi-1.0.13.tar.xz
   sha256: 7fa16c80c81bd622f7b198d31356da139cc318a63fc7761217af4130903f54a2
 harfbuzz:
   version: 8.1.1
-  url: https://github.com/harfbuzz/harfbuzz/archive/8.1.1.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/harfbuzz-8.1.1.tar.gz
   sha256: b16e6bc0fc7e6a218583f40c7d201771f2e3072f85ef6e9217b36c1dc6b2aa25
 libass:
   version: 0.17.1
-  url: https://github.com/libass/libass/releases/download/0.17.1/libass-0.17.1.tar.xz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/libass-0.17.1.tar.xz
   sha256: f0da0bbfba476c16ae3e1cfd862256d30915911f7abaa1b16ce62ee653192784
 libogg:
   version: 1.3.5
-  url: https://github.com/xiph/ogg/releases/download/v1.3.5/libogg-1.3.5.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/libogg-1.3.5.tar.gz
   sha256: 0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664
 libvorbis:
   version: 1.3.7
-  url: https://github.com/xiph/vorbis/releases/download/v1.3.7/libvorbis-1.3.7.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/libvorbis-1.3.7.tar.gz
   sha256: 0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab
 libvpx:
   version: 1.13.0+1
-  url: https://gitlab.freedesktop.org/gstreamer/meson-ports/libvpx/-/archive/90d26fac0d895969a82cd873ad36e39737104c44/libvpx-v1.13.0.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/libvpx-1.13.0+1.tar.gz
   sha256: 4f872ad2709d17b848b3588231495e432c42b9263731b9121fa210a3c5a893ff
-libx264:
-  version: "a8b68ebf"
-  url: https://code.videolan.org/videolan/x264/-/archive/a8b68ebfaa68621b5ac8907610d3335971839d52/libx264-a8b68ebfaa68621b5ac8907610d3335971839d52.tar.gz
-  sha256: 164688b63f11a6e4f6d945057fc5c57d5eefb97973d0029fb0303744e10839ff
 libxml2:
   version: 2.11.5
-  url: https://download.gnome.org/sources/libxml2/2.11/libxml2-2.11.5.tar.xz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/libxml2-2.11.5.tar.xz
   sha256: 3727b078c360ec69fa869de14bd6f75d7ee8d36987b071e6928d4720a28df3a6
 openssl:
   version: 3.5.7
-  url: https://github.com/openssl/openssl/releases/download/openssl-3.5.7/openssl-3.5.7.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/openssl-3.5.7.tar.gz
   sha256: a8c0d28a529ca480f9f36cf5792e2cd21984552a3c8e4aa11a24aa31aeac98e8
 mpv:
   version: 0.36.0
-  url: https://github.com/mpv-player/mpv/archive/refs/tags/v0.36.0.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/mpv-0.36.0.tar.gz
   sha256: 29abc44f8ebee013bb2f9fe14d80b30db19b534c679056e4851ceadf5a5e8bf6
 pkg-config:
   version: 0.29.2
-  url: https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/pkg-config-0.29.2.tar.gz
   sha256: 6fc69c01688c9458a57eb9a1664c9aba372ccda420a02bf4429fe610e7e7d591
 uchardet:
   version: 0.0.8
-  # freedesktop.org returns HTTP 418 to GH Actions runners even with a real
-  # UA. Debian archives the identical upstream tarball (verified: same SHA).
-  url: https://deb.debian.org/debian/pool/main/u/uchardet/uchardet_0.0.8.orig.tar.xz
+  url: https://github.com/tinypinglite/sakuramedia-media-kit/releases/download/deps-mirror-v1/uchardet-0.0.8.tar.xz
   sha256: e97a60cfc00a1c147a674b097bb1422abd9fa78a2d9ce3f3fdcc2e78a34ac5f0

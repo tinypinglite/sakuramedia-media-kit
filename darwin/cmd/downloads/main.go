@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/sha256"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -145,7 +144,11 @@ func check(path, sha256sum string) error {
 
 	sum := fmt.Sprintf("%x", hash.Sum(nil))
 	if sum != sha256sum {
-		return errors.New("check: cheksums not matching")
+		// Log actual vs expected so that when a gitlab archive URL silently
+		// changes tarball content (git format bump etc.), the next CI log
+		// tells us what SHA to record in downloads.lock instead of failing
+		// blind.
+		return fmt.Errorf("check: sha256 mismatch — got %s want %s", sum, sha256sum)
 	}
 
 	return nil

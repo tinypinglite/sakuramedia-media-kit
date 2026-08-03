@@ -11,7 +11,7 @@ meson setup build \
     -Dbzip2=disabled \
     -Dharfbuzz=enabled \
     -Dmmap=disabled \
-    -Dpng=enabled \
+    -Dpng=disabled \
     -Dtests=disabled \
     -Dzlib=enabled
 meson compile -C build

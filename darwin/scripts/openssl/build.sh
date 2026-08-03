@@ -77,6 +77,8 @@ SYSROOT=$(xcrun --sdk "${SDK_NAME}" --show-sdk-path)
     -isysroot "${SYSROOT}" \
     "${MIN_FLAG}"
 
-CORES=$(sysctl -n hw.ncpu)
+# SANDBOX_PATH only has /bin:/usr/bin — `sysctl` lives in /usr/sbin. Use
+# getconf (in /usr/bin) with a conservative fallback.
+CORES=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
 make -j"${CORES}" build_sw
 make install_sw

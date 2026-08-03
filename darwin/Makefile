@@ -29,6 +29,13 @@ CFLAGS_RELAX = -Wno-error=int-conversion -Wno-error=implicit-function-declaratio
 # Enable secondary expansions, needed for var substitution in rules's deps
 .SECONDEXPANSION:
 
+# All intermediate targets are directories; make's automatic intermediate-file
+# deletion pass invokes plain `unlink` on them, which errors out with "Operation
+# not permitted" on a directory and fails the whole build after a target's
+# deps have already succeeded. .SECONDARY (empty) opts every target out of that
+# auto-delete pass.
+.SECONDARY:
+
 # Create any number of jobs, but keep the load average below ncpu
 MAKEFLAGS += "-j -l $(shell sysctl -n hw.ncpu) "
 

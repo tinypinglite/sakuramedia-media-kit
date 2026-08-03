@@ -22,7 +22,11 @@ permissions:
 jobs:
   build:
     name: Build
-    runs-on: macos-13
+    # macos-15 = Apple Silicon; larger runner pool than macos-13/14 (Intel is
+    # very queue-starved on public repos). macos-amd64 still cross-compiles
+    # cleanly from arm64 hosts — we pass -arch/-isysroot explicitly in every
+    # cross-file and in openssl/build.sh.
+    runs-on: macos-15
     defaults:
       run:
         working-directory: ./darwin

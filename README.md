@@ -12,69 +12,86 @@
 | media_kit_video | 1.3.1 | — |
 | media_kit_libs_video | 1.0.7 | — |
 | media_kit_libs_android_video | 1.3.8 | libmpv-android-video-build **v1.1.7** |
-| media_kit_libs_ios_video / macos_video | 1.1.4 | libmpv-darwin-build v0.6.0（未做） |
+| media_kit_libs_ios_video | 1.1.4 | libmpv-darwin-build **v0.6.0**（video-default） |
+| media_kit_libs_macos_video | 1.1.4 | libmpv-darwin-build **v0.6.0**（video-default） |
 | media_kit_libs_windows_video | 1.0.11 | libmpv-win32-video-build 2023-09-24（未做） |
 
 ## 目录结构
 
 ```
 android/                 libmpv-android-video-build v1.1.7 的 vendor + OpenSSL 改造
-  buildscripts/            改动点：
-                             include/depinfo.sh        mbedtls 3.4.0 → openssl 3.5.7
-                             include/download-deps.sh  克隆 openssl 源码
-                             scripts/openssl.sh        新增（NDK 交叉编译，静态库）
-                             flavors/*.sh              --enable-mbedtls → --enable-openssl
-                             bundle_default.sh         加 shebang/-e、strip 改用 depinfo 的 NDK
+  buildscripts/            include/depinfo.sh + download-deps.sh + scripts/openssl.sh
+                           + flavors/*.sh 把 mbedtls 3.4.0 换成 openssl 3.5.7
+darwin/                  libmpv-darwin-build v0.6.0 的 vendor + OpenSSL 改造
+  Makefile               mbedtls_* → openssl_*
+  downloads.lock         mbedtls 3.4.1 → openssl 3.5.7 (Apache-2.0)
+  scripts/openssl/       新增：直接跑 OpenSSL 的 Perl Configure，per-arch iOS/macOS 交叉编译
+  scripts/ffmpeg/        --enable-mbedtls → --enable-openssl
 .github/workflows/
-  build-android.yml      推 android-v* 标签 → 构建 → 发 Release（4 个 JAR + 调试符号 + md5）
-packages/
-  media_kit_libs_android_video/   pub 上 1.3.8 的薄 fork，只改 build.gradle 的下载源
+  build-android.yml      推 android-v* → 4 个 ABI JAR → Release
+  build-darwin.yml       推 darwin-v* → iOS + macOS universal xcframework tarballs → Release
+                         （只构建 video-default，跳过 audio/full/encodersgpl，保持 <90min）
+packages/                四个 media_kit_libs_*_video 的薄 fork
+  media_kit_libs_android_video/   build.gradle 指向本仓库 Release
+  media_kit_libs_ios_video/       ios/Makefile 指向本仓库 Release
+  media_kit_libs_macos_video/     macos/Makefile 指向本仓库 Release
 tools/
-  update-android-hashes.sh        发完 Release 后刷新 build.gradle 里的 tag 和 MD5
+  update-android-hashes.sh        发完 android-v* Release 刷 build.gradle 里的 tag+MD5
+  update-darwin-hashes.sh         发完 darwin-v* Release 刷两个 Makefile 里的 tag+SHA256
 ```
 
-## 发版流程（Android）
+## 发版流程
+
+### Android
 
 ```bash
-# 1. 打标签触发构建（也可以先 workflow_dispatch 手动跑一次验证）
 git tag android-v1.1.7-openssl.1 && git push origin android-v1.1.7-openssl.1
-
-# 2. 等 Actions 完成、Release 发布后，刷新 libs 包里的 hash 并提交
+# 等 Actions 完成 → Release 发布（约 20 分钟）
 tools/update-android-hashes.sh android-v1.1.7-openssl.1
 git commit -am "android: point libs package at android-v1.1.7-openssl.1"
 git push
 ```
 
-sakuramedia 侧（已配置）：
+### Darwin (iOS + macOS)
+
+```bash
+git tag darwin-v0.6.0-openssl.1 && git push origin darwin-v0.6.0-openssl.1
+# 等 macos-13 runner 跑完（预计 60-90 分钟：5 arch × 10 deps）
+tools/update-darwin-hashes.sh darwin-v0.6.0-openssl.1
+git commit -am "darwin: point libs packages at darwin-v0.6.0-openssl.1"
+git push
+```
+
+## sakuramedia 侧消费
 
 ```yaml
 dependency_overrides:
   media_kit_libs_android_video:
-    git:
-      url: https://github.com/tinypinglite/sakuramedia-media-kit.git
-      path: packages/media_kit_libs_android_video
-      ref: main
+    git: {url: https://github.com/tinypinglite/sakuramedia-media-kit.git,
+          path: packages/media_kit_libs_android_video, ref: main}
+  media_kit_libs_ios_video:
+    git: {url: https://github.com/tinypinglite/sakuramedia-media-kit.git,
+          path: packages/media_kit_libs_ios_video, ref: main}
+  media_kit_libs_macos_video:
+    git: {url: https://github.com/tinypinglite/sakuramedia-media-kit.git,
+          path: packages/media_kit_libs_macos_video, ref: main}
 ```
 
-之后 `flutter build apk` 会在 Gradle 阶段自动从本仓库 Release 下载 JAR 并校验 MD5。
+之后 `flutter build apk|ios|macos` 会自动从本仓库 Release 下载并校验校验和。
 
 ## 许可证说明
 
 FFmpeg 以 `--disable-gpl --enable-version3`（LGPLv3）构建；OpenSSL 3.x 为 Apache-2.0，
-与 LGPLv3 兼容，FFmpeg 6.0 的 configure 对 OpenSSL≥3 仅在 GPL 模式下有额外要求，
-本配置不受影响，无需 `--enable-nonfree`。
+与 LGPLv3 兼容。FFmpeg 6.0 的 configure 对 OpenSSL≥3 仅在 GPL 模式下有额外要求，本配置
+不受影响，无需 `--enable-nonfree`。
 
 ## TLS 行为说明
 
-FFmpeg 的 https 默认 `tls_verify=0`（不校验证书），mpv 的 `--tls-verify` 默认也是关闭，
-上游 mbedTLS 版本同样如此——换成 OpenSSL 后此行为不变，不存在"Android 上找不到系统
-CA store"的问题。
+FFmpeg 的 `tls_verify=0` 默认不校验证书，mpv 的 `--tls-verify` 默认也是关闭——换成
+OpenSSL 后此行为不变。
 
-## 待办（其他平台）
+## 待办
 
-- iOS/macOS：fork [libmpv-darwin-build](https://github.com/media-kit/libmpv-darwin-build)
-  v0.6.0（Nix + meson，上游本来就在 GH Actions 的 macOS runner 上构建），给 OpenSSL 加
-  ios/ios-simulator/macos 各架构的交叉编译配方。
 - Windows：fork [libmpv-win32-video-build](https://github.com/media-kit/libmpv-win32-video-build)
   （已 archive），其 `packages/openssl.cmake` 现成，把 `ffmpeg.cmake` 的
   `DEPENDS mbedtls` / `--enable-mbedtls` 换成 openssl 即可。

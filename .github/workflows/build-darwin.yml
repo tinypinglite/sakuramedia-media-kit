@@ -1,0 +1,85 @@
+# Builds libmpv for iOS + macOS (media-kit "video-default" flavor) with OpenSSL
+# instead of upstream mbedTLS, and publishes the two universal xcframework
+# tarballs (iOS + macOS) to a GitHub Release on darwin-v* tags.
+#
+# Manual runs only produce artifacts, useful for smoke-testing before tagging.
+#
+# We build ONLY video-default (skipping audio, full, encodersgpl variants) to
+# keep the macOS runner under the 6-hour cap and match what
+# media_kit_libs_{ios,macos}_video actually download.
+
+name: Build libmpv-darwin (OpenSSL)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "darwin-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-13
+    defaults:
+      run:
+        working-directory: ./darwin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: brew install go meson ninja nasm
+
+      - name: Print tool versions
+        run: make tool-versions
+
+      - name: Determine VERSION
+        id: version
+        run: |
+          case "${GITHUB_REF}" in
+            refs/tags/*) VERSION=${GITHUB_REF#refs/tags/} ;;
+            *)           VERSION=develop ;;
+          esac
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      # Split the two universal xcframework tarballs into separate steps so a
+      # macOS-only failure doesn't waste the iOS build (and vice versa). Each
+      # 'make <target>' pulls in exactly its transitive per-arch deps.
+      - name: Build iOS xcframework (video-default)
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          make build/output/libmpv-xcframeworks_${VERSION}_ios-universal-video-default.tar.gz
+
+      - name: Build macOS xcframework (video-default)
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          make build/output/libmpv-xcframeworks_${VERSION}_macos-universal-video-default.tar.gz
+
+      - name: Collect outputs
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          mkdir -p ../out
+          cp build/output/libmpv-xcframeworks_${VERSION}_ios-universal-video-default.tar.gz ../out/
+          cp build/output/libmpv-xcframeworks_${VERSION}_macos-universal-video-default.tar.gz ../out/
+          cd ../out
+          shasum -a 256 *.tar.gz | tee sha256sums.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmpv-darwin-openssl
+          path: out/*
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/darwin-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: out/sha256sums.txt
+          files: |
+            out/libmpv-xcframeworks_*_ios-universal-video-default.tar.gz
+            out/libmpv-xcframeworks_*_macos-universal-video-default.tar.gz
+            out/sha256sums.txt

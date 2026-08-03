@@ -5,6 +5,15 @@ android/buildscripts/sdk/
 android/buildscripts/scripts/ffmpeg.sh
 android/buildscripts/*.zip
 android/buildscripts/*.jar
+darwin/build/
 out/
+
+# When Cocoapods runs `make` inside the vendored libs pkgs it materialises
+# downloaded xcframework binaries here — these are per-machine build cache,
+# not source of truth. Actual binaries ship via GitHub Releases.
+packages/media_kit_libs_ios_video/ios/.cache/
+packages/media_kit_libs_ios_video/ios/Frameworks/
+packages/media_kit_libs_macos_video/macos/.cache/
+packages/media_kit_libs_macos_video/macos/Frameworks/
 
 .DS_Store

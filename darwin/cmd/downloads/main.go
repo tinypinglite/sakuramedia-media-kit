@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/media-kit/libmpv-darwin-build/pkg/lock"
 )
@@ -73,6 +74,26 @@ func reverse(s []string) []string {
 }
 
 func download(url, path string) error {
+	// Retry with exponential backoff — upstream sources (ffmpeg.org,
+	// freedesktop.org, gitlab.gnome.org) intermittently 4xx/5xx or drop TLS
+	// handshakes from GH Actions runners. Single-shot download aborts the
+	// whole ~60min build on any single flake.
+	const attempts = 5
+	var lastErr error
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			backoff := time.Duration(1<<(i-1)) * 3 * time.Second
+			log.Printf("download: retry %d/%d after %s (%v)", i, attempts-1, backoff, lastErr)
+			time.Sleep(backoff)
+		}
+		if lastErr = downloadOnce(url, path); lastErr == nil {
+			return nil
+		}
+	}
+	return lastErr
+}
+
+func downloadOnce(url, path string) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("download: %w", err)
@@ -83,8 +104,12 @@ func download(url, path string) error {
 	if err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
+	// freedesktop.org returns HTTP 418 to requests with the default Go
+	// User-Agent — set a real-looking UA to avoid the bot filter.
+	req.Header.Set("User-Agent", "Mozilla/5.0 (libmpv-darwin-build)")
 
-	res, err := http.DefaultClient.Do(req)
+	client := &http.Client{Timeout: 5 * time.Minute}
+	res, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("download: %w", err)
 	}

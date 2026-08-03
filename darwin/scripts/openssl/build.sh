@@ -60,15 +60,18 @@ esac
 SYSROOT=$(xcrun --sdk "${SDK_NAME}" --show-sdk-path)
 
 # Options rationale:
-#   shared no-static  : we ship .dylibs (relink-dylibs.sh + framework build
-#                       both operate on dylibs)
-#   no-tests no-apps  : skip test suite + `openssl` CLI (halves build time,
-#                       no runtime effect on ffmpeg's libssl/libcrypto usage)
-#   no-docs           : skip pod2man
-#   --libdir=lib      : some hosts default to lib64; force lib for stable
-#                       pkg-config paths downstream
+#   shared          : build .dylibs (relink-dylibs.sh + framework build both
+#                     operate on dylibs). OpenSSL 3.x has no "no-static"
+#                     option — .a's are always built alongside .dylib's;
+#                     the downstream find in libs-arch/build.sh filters
+#                     to *.dylib so the .a's are harmless.
+#   no-tests no-apps: skip test suite + `openssl` CLI (halves build time,
+#                     no runtime effect on ffmpeg's libssl/libcrypto usage)
+#   no-docs         : skip pod2man
+#   --libdir=lib    : some hosts default to lib64; force lib for stable
+#                     pkg-config paths downstream
 ./Configure "${TARGET}" \
-    shared no-static no-tests no-apps no-docs \
+    shared no-tests no-apps no-docs \
     --prefix="${OUTPUT_DIR}" \
     --libdir=lib \
     -isysroot "${SYSROOT}" \

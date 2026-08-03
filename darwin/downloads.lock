@@ -1,7 +1,10 @@
 dav1d:
   version: 1.2.1
-  url: https://code.videolan.org/videolan/dav1d/-/archive/1.2.1/dav1d-1.2.1.tar.bz2
-  sha256: a4003623cdc0109dec3aac8435520aa3fb12c4d69454fa227f2658cdb6dab5fa
+  # code.videolan.org's gitlab archive URLs drift when gitlab bumps its git
+  # archive format. downloads.videolan.org hosts real release tarballs with
+  # stable SHAs.
+  url: https://downloads.videolan.org/pub/videolan/dav1d/1.2.1/dav1d-1.2.1.tar.xz
+  sha256: 4e33eb61ec54c768a16da0cf8fa0928b4c4593f5f804a3c887d4a21c318340b2
 ffmpeg:
   version: "6.0"
   url: https://ffmpeg.org/releases/ffmpeg-6.0.tar.xz
@@ -62,5 +65,7 @@ pkg-config:
   sha256: 6fc69c01688c9458a57eb9a1664c9aba372ccda420a02bf4429fe610e7e7d591
 uchardet:
   version: 0.0.8
-  url: https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz
+  # freedesktop.org returns HTTP 418 to GH Actions runners even with a real
+  # UA. Debian archives the identical upstream tarball (verified: same SHA).
+  url: https://deb.debian.org/debian/pool/main/u/uchardet/uchardet_0.0.8.orig.tar.xz
   sha256: e97a60cfc00a1c147a674b097bb1422abd9fa78a2d9ce3f3fdcc2e78a34ac5f0

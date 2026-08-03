@@ -103,9 +103,10 @@ func downloadOnce(url, path string) error {
 	if err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
-	// freedesktop.org returns HTTP 418 to requests with the default Go
-	// User-Agent — set a real-looking UA to avoid the bot filter.
-	req.Header.Set("User-Agent", "Mozilla/5.0 (libmpv-darwin-build)")
+	// Real UA — some hosts return 418/403 for anything else. curl/8.x is
+	// broadly whitelisted (many mirror admins allowlist curl-family UAs).
+	req.Header.Set("User-Agent", "curl/8.4.0")
+	req.Header.Set("Accept", "*/*")
 
 	client := &http.Client{Timeout: 5 * time.Minute}
 	res, err := client.Do(req)

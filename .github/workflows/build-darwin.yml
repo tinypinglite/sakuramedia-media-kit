@@ -63,6 +63,16 @@ jobs:
           VERSION=${{ steps.version.outputs.version }}
           make build/output/libmpv-xcframeworks_${VERSION}_macos-universal-video-default.tar.gz
 
+      - name: Dump meson logs on failure
+        if: failure()
+        run: |
+          echo "=== SANDBOX cmake resolves to ==="
+          ls -laH build/intermediate/links/bin/cmake || true
+          echo "=== cmake --version from sandbox ==="
+          build/intermediate/links/bin/cmake --version 2>&1 || true
+          echo "=== meson-log.txt (any failing subproject) ==="
+          find build/tmp -name meson-log.txt -exec sh -c 'echo "--- {} ---"; cat "{}"' \; 2>/dev/null | head -400
+
       - name: Collect outputs
         run: |
           VERSION=${{ steps.version.outputs.version }}

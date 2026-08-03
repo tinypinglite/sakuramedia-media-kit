@@ -1,0 +1,10 @@
+# build outputs if anyone runs buildscripts locally
+android/buildscripts/deps/
+android/buildscripts/prefix/
+android/buildscripts/sdk/
+android/buildscripts/scripts/ffmpeg.sh
+android/buildscripts/*.zip
+android/buildscripts/*.jar
+out/
+
+.DS_Store

@@ -1,0 +1,75 @@
+# Builds libmpv for Android (media-kit "default video" flavor) with OpenSSL
+# instead of upstream's mbedTLS, and publishes the 4 per-ABI JARs to a GitHub
+# Release when a tag matching android-v* is pushed.
+#
+# Manual runs (workflow_dispatch) only produce a build artifact — useful to
+# verify the build before cutting a release tag.
+
+name: Build libmpv-android (OpenSSL)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "android-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Symlink SDK
+        working-directory: ./android/buildscripts
+        run: |
+          mkdir sdk
+          ln -s ${ANDROID_HOME} ./sdk/android-sdk-linux
+
+      - name: Bundle (default)
+        working-directory: ./android/buildscripts
+        run: |
+          chmod +x bundle_default.sh
+          ./bundle_default.sh
+
+      - name: Collect artifacts
+        working-directory: ./android/buildscripts
+        run: |
+          mkdir -p ../../out
+          cp deps/media-kit-android-helper/app/build/outputs/apk/release/default-*.jar ../../out/
+          cp debug-symbols-default.zip ../../out/
+          cd ../../out
+          md5sum default-*.jar | tee md5sums.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmpv-android-openssl
+          path: out/*
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/android-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: out/md5sums.txt
+          files: |
+            out/default-arm64-v8a.jar
+            out/default-armeabi-v7a.jar
+            out/default-x86.jar
+            out/default-x86_64.jar
+            out/debug-symbols-default.zip
+            out/md5sums.txt

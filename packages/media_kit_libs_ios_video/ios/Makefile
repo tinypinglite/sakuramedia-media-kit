@@ -3,8 +3,8 @@ all: Frameworks/*.xcframework Frameworks/.symlinks
 # TLS-swap fork: xcframeworks are the OpenSSL rebuild published by
 # https://github.com/tinypinglite/sakuramedia-media-kit — refresh the version
 # and sha256 below with tools/update-darwin-hashes.sh after each release.
-MPV_XCFRAMEWORKS_VERSION=darwin-v0.6.0-openssl.1
-MPV_XCFRAMEWORKS_SHA256SUM=c43aae8d19cc4324feba9366dc4ff5ddd1871f74e01a9cbac594aa2cb9b79810
+MPV_XCFRAMEWORKS_VERSION=darwin-v0.6.0-openssl.2
+MPV_XCFRAMEWORKS_SHA256SUM=65483fcede47803f4b89258b53ddc8a507069b97c2b0433073af9d5e45ec10be
 
 .cache/xcframeworks/libmpv-xcframeworks-${MPV_XCFRAMEWORKS_VERSION}-ios-universal.tar.gz:
 	mkdir -p .cache/xcframeworks

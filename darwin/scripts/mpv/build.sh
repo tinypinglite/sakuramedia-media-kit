@@ -137,11 +137,17 @@ COMMON_OPTIONS=(
 COMMON_VIDEO_OPTIONS=(
     `# misc features`
     -Duchardet=enabled `# uchardet support`
-    -Dzlib=enabled `# zlib`
 
     `# video output features`
     -Dgl=enabled `# OpenGL context support`
     -Dplain-gl=enabled `# OpenGL without platform-specific code (e.g. for libmpv)`
+)
+
+MACOS_VIDEO_ONLY_ZLIB_OPTIONS=(
+    # Only macOS build uses system zlib — on iOS the meson probe pulls
+    # zlib from the macOS SDK (host sysroot), mixing SDK headers into the
+    # iOS compile and triggering mpv's -Werror on nullability warnings.
+    -Dzlib=enabled
 )
 
 MACOS_OPTIONS=(
@@ -181,8 +187,9 @@ if [ "${OS}" == "macos" ]; then
     OPTIONS+=("${MACOS_OPTIONS[@]}")
     if [ "${VARIANT}" == "video" ]; then
         OPTIONS+=("${MACOS_VIDEO_OPTIONS[@]}")
+        OPTIONS+=("${MACOS_VIDEO_ONLY_ZLIB_OPTIONS[@]}")
     fi
-elif [ "${OS}" == "ios" ]; then
+elif [ "${OS}" == "ios" ] || [ "${OS}" == "iossimulator" ]; then
     OPTIONS+=("${IOS_OPTIONS[@]}")
     if [ "${VARIANT}" == "video" ]; then
         OPTIONS+=("${IOS_VIDEO_OPTIONS[@]}")

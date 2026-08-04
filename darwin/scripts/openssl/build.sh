@@ -68,10 +68,28 @@ SYSROOT=$(xcrun --sdk "${SDK_NAME}" --show-sdk-path)
 #   no-tests no-apps: skip test suite + `openssl` CLI (halves build time,
 #                     no runtime effect on ffmpeg's libssl/libcrypto usage)
 #   no-docs         : skip pod2man
+#   no-engine       : drop engines-3/{padlock,capi,loader_attic}.dylib. These
+#   no-legacy         and ossl-modules/legacy.dylib are dlopen-able MODULES,
+#                     not link targets: despite the .dylib extension their
+#                     Mach-O type is MH_BUNDLE, so the framework packaging
+#                     step downstream would turn them into xcframeworks that
+#                     fail every link ("building for macOS, but linking in
+#                     object file built for ..."/bundle-not-linkable).
+#                     Dropping them is behaviour-neutral here: OpenSSL only
+#                     dlopens modules from its compile-time configured path,
+#                     which no longer exists once we relocate into framework
+#                     bundles — they could never load either way. And nothing
+#                     in this stack wants them: legacy carries MD2/MD4/DES/
+#                     RC2/RC4/Blowfish/IDEA/SEED, none of which appear in TLS
+#                     1.2/1.3 suites; --enable-protocol=crypto uses FFmpeg's
+#                     own libavutil/aes.c; rtmpe (the RC4 user) is not built.
+#                     The three engines are VIA-CPU / Windows-CryptoAPI /
+#                     legacy-store shims, meaningless on Apple platforms, and
+#                     the ENGINE API is deprecated in OpenSSL 3 anyway.
 #   --libdir=lib    : some hosts default to lib64; force lib for stable
 #                     pkg-config paths downstream
 ./Configure "${TARGET}" \
-    shared no-tests no-apps no-docs \
+    shared no-tests no-apps no-docs no-engine no-legacy \
     --prefix="${OUTPUT_DIR}" \
     --libdir=lib \
     -isysroot "${SYSROOT}" \

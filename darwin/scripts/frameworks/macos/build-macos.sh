@@ -7,6 +7,16 @@ set -u # treat unset variables as an error
 # see: https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPFrameworks/Concepts/FrameworkAnatomy.html
 
 find ${DEPS} -name "*.dylib" -type f | while read DYLIB; do
+    # Skip dlopen-able modules (Mach-O MH_BUNDLE). OpenSSL ships its
+    # engines/providers with a .dylib extension but bundle Mach-O type; a
+    # bundle cannot be a link target, so packaging one as an xcframework
+    # breaks every downstream link. See scripts/openssl/build.sh — we also
+    # configure those away at the source, this is the belt-and-braces half.
+    if file -b "${DYLIB}" | grep -q "bundle"; then
+        echo "${DYLIB}: skipping (Mach-O bundle, not a linkable dylib)"
+        continue
+    fi
+
     echo "${DYLIB}"
 
     # create framework name: libavcodec.59.dylib -> Avcodec

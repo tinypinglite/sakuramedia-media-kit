@@ -4,7 +4,7 @@ all: Frameworks/*.xcframework Frameworks/.symlinks
 # https://github.com/tinypinglite/sakuramedia-media-kit — refresh the version
 # and sha256 below with tools/update-darwin-hashes.sh after each release.
 MPV_XCFRAMEWORKS_VERSION=darwin-v0.6.0-openssl.1
-MPV_XCFRAMEWORKS_SHA256SUM=SHA256_FILLME_MACOS
+MPV_XCFRAMEWORKS_SHA256SUM=e8aa406dc6bec25980f8adc902fc3356e5cb5a9cd39d10495575a57ce06fdf0a
 
 .cache/xcframeworks/libmpv-xcframeworks-${MPV_XCFRAMEWORKS_VERSION}-macos-universal.tar.gz:
 	mkdir -p .cache/xcframeworks

@@ -13,6 +13,6 @@ meson setup build \
     -Dmmap=disabled \
     -Dpng=disabled \
     -Dtests=disabled \
-    -Dzlib=enabled
+    -Dzlib=disabled
 meson compile -C build
 meson install -C build
